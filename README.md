@@ -2,8 +2,8 @@
 bottle-api-json-formatting
 =====================
 
-This plugin formats all output into a a simple json schema. This makes it much 
-easier to build REST based api services with bottle. 
+A Bottle plugin which encapsulates results and errors in a json object. This 
+makes it much easier to build REST based api services with bottle. 
 
 
 Installation
