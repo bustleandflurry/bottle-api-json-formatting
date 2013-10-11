@@ -93,7 +93,7 @@ class JsonFormatting(object):
             }
         if self.debug:
             response_object['debug'] = {
-                    'exception': str(error.exception),
+                    'exception': repr(error.exception),
                     'traceback': error.traceback,
                 }
         json_response = json_dumps(response_object)
