@@ -41,5 +41,22 @@ class TestOutput(TestBase):
         except Exception as e:
             self.assertEqual(type(e), ValueError)
 
+    def test_accept_media_types(self):
+        ''' Test accept media types'''
+        form_data = {'mediatypes': 'application/json'}
+        result = self.app.post('/switchmediatypes', form_data)
+        self.assertEqual(result.status_code, 200)
+        result = self.app.get('/')
+        self.assertEqual(result.body, 'test')
+        headers = {'Accept': 'application/json'}
+        result = self.app.get('/', headers=headers)
+        data = json.loads(result.body)
+        self.assertEqual(data['status_code'], 0)
+        result = self.app.post('/switchmediatypes')
+        self.assertEqual(result.status_code, 200)
+        result = self.app.get('/')
+        data = json.loads(result.body)
+        self.assertEqual(data['status_code'], 0)
+
 if __name__ == '__main__':
    unittest.main() 
