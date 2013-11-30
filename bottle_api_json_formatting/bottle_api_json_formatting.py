@@ -1,7 +1,12 @@
 ''' Formats output in a json schema. To be used for making json based API 
 servers '''
 
-from bottle import Bottle, response
+from bottle import Bottle 
+from bottle import response
+from bottle import request
+from bottle import template
+from bottle import tob
+from bottle import ERROR_PAGE_TEMPLATE
 
 # Co-opted the Bottle json import strategy
 try:
@@ -30,17 +35,23 @@ class JsonFormatting(object):
     name = 'json_formatting'
     api = 2
 
+    #pylint: disable=C0103,W0102
+    ALL_TYPES = '*/*'
+
     statuses = {
             0: 'success',
             1: 'error',
             2: 'internal failure',
         }
 
-    def __init__(self, debug=False):
+    def __init__(self, supported_types=['*/*'], 
+            debug=False):
         self.debug = debug
         self.app = None
         self.function_type = None
         self.function_original = None
+        self.supported_types = supported_types
+        self.ALL_TYPES = JsonFormatting.ALL_TYPES
 
     def setup(self, app):
         ''' Handle plugin install '''
@@ -58,12 +69,29 @@ class JsonFormatting(object):
         def wrapper(*a, **ka):
             ''' Encapsulate the result in json '''
             output = callback(*a, **ka)
-            response_object = self.get_response_object(0)
-            response_object['data'] = output
-            json_response = json_dumps(response_object)
-            response.content_type = 'application/json'
-            return json_response
+            if self.in_supported_types(request.headers.get('Accept', '')):
+                response_object = self.get_response_object(0)
+                response_object['data'] = output
+                json_response = json_dumps(response_object)
+                response.content_type = 'application/json'
+                return json_response
+            else:
+                return output
         return wrapper
+
+    def in_supported_types(self, accept_request_header):
+        ''' Test accept request header in supprted types '''
+        if self.ALL_TYPES in self.supported_types:
+            return True
+        accepts = []
+        for item in accept_request_header.split(','):
+            accepts.append(item.strip().split(';')[0])
+        if self.ALL_TYPES in accepts:
+            return True
+        for this_type in self.supported_types:
+            if this_type in accepts:
+                return True
+        return False
 
     def close(self):
         ''' Put the original function back on uninstall '''
@@ -85,17 +113,21 @@ class JsonFormatting(object):
         
     def custom_error_handler(self, res, error):
         ''' Monkey patch method for json formatting error responses '''
-        response_object = self.get_response_object(1)
-        response_object['error'] = {
-                'status_code': error.status_code,
-                'status': error.status_line,
-                'message': error.body,
-            }
-        if self.debug:
-            response_object['debug'] = {
-                    'exception': repr(error.exception),
-                    'traceback': error.traceback,
+        # when the accept type matches the jsonFormatting configuration
+        if self.in_supported_types(request.headers.get('Accept', '')):
+            response_object = self.get_response_object(1)
+            response_object['error'] = {
+                    'status_code': error.status_code,
+                    'status': error.status_line,
+                    'message': error.body,
                 }
-        json_response = json_dumps(response_object)
-        response.content_type = 'application/json'
-        return json_response
+            if self.debug:
+                response_object['debug'] = {
+                        'exception': repr(error.exception),
+                        'traceback': error.traceback,
+                    }
+            json_response = json_dumps(response_object)
+            response.content_type = 'application/json'
+            return json_response
+        else:
+            return tob(template(ERROR_PAGE_TEMPLATE, e=error))
