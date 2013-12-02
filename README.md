@@ -76,7 +76,7 @@ Module Contents
 
 bottle\_api\_json\_formatting.**JsonFormatting**(*supported\_types=*['\*/\*'], *debug=False*)
 
-*supported\_types* allows you to expressly set which Content-Types are acceptable for a json formatted response. When set Content-Types not in the will be passed through untouched. 
+*supported\_types* allows you to expressly set which Content-Types are acceptable for a json formatted response. When set any Content-Types not in the will be passed through untouched. 
 
 *debug* set to True will add the fields exception and traceback to error responses.
 
