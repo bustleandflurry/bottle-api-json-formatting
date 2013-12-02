@@ -11,7 +11,7 @@ def read(fname):
 setup(
 	name = "bottle-api-json-formatting",
     packages = ['bottle_api_json_formatting',],
-	version = "0.0.9",
+	version = "0.1.0",
 	author = "Aron Bartling",
 	author_email = "aron@bustleandflurry.com",
 	description = ("A bottle plugin to json format standard and error responses. \
