@@ -35,12 +35,12 @@ app.install(bottle_api_json_formatting.JsonFormatting())
 def index():
     return 'This is a test.'
 
-@APP.route('/error')
+@app.route('/error')
 def index():
     raise Exception('This is an error.')
 
 if __name__ == '__main__':
-    run(app, host='0.0.0.0', port=8080, debug=True)
+    bottle.run(app, host='0.0.0.0', port=8080, debug=True)
 ```
 
 
